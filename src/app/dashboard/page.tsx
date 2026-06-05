@@ -4,12 +4,15 @@ import Sidebar from '@/components/Sidebar';
 
 /* ── Countdown hook ── */
 function useCountdown(daysAhead: number) {
-  const target = new Date();
-  target.setDate(target.getDate() + daysAhead);
-  target.setHours(9, 0, 0, 0);
+  const getTarget = () => {
+    const t = new Date();
+    t.setDate(t.getDate() + daysAhead);
+    t.setHours(9, 0, 0, 0);
+    return t;
+  };
 
   const calc = () => {
-    const diff = target.getTime() - Date.now();
+    const diff = getTarget().getTime() - Date.now();
     if (diff <= 0) return { d: 0, h: 0, m: 0, s: 0 };
     return {
       d: Math.floor(diff / 86400000),
@@ -27,521 +30,516 @@ function useCountdown(daysAhead: number) {
   return cd;
 }
 
-/* ── Sparkline data ── */
-const SparkLine = ({ color, points }: { color: string; points: string }) => (
-  <svg viewBox="0 0 100 30" preserveAspectRatio="none" style={{ width: '100%', height: 32, overflow: 'visible' }}>
-    <defs>
-      <linearGradient id={`sp-${color}`} x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%" stopColor={color} stopOpacity="0.3"/>
-        <stop offset="100%" stopColor={color} stopOpacity="0"/>
-      </linearGradient>
-    </defs>
-    <path d={points} fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-    <path d={points + ' L100,30 L0,30Z'} fill={`url(#sp-${color})`}/>
-    <circle cx="100" cy={points.split(' ').at(-1)?.split(',')[1] ?? '8'} r="3" fill={color}/>
-  </svg>
+const pad = (n: number) => String(n).padStart(2, '0');
+
+/* ── Score bar ── */
+const ScoreBar = ({ pct, color }: { pct: number; color: string }) => (
+  <div style={{
+    height: 3,
+    background: 'rgba(255,255,255,.08)',
+    borderRadius: 100,
+    overflow: 'hidden',
+    marginTop: 10,
+  }}>
+    <div style={{
+      height: '100%',
+      borderRadius: 100,
+      background: color,
+      width: `${pct}%`,
+      transition: 'width 0.8s cubic-bezier(.4,0,.2,1)',
+    }} />
+  </div>
 );
 
+/* ── Road step ── */
+function RoadStep({
+  state,
+  label,
+  badge,
+}: {
+  state: 'done' | 'active' | 'lock';
+  label: string;
+  badge?: string;
+}) {
+  return (
+    <div className={`road-step road-${state}`}>
+      <div className="step-node">
+        {state === 'done' && (
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+            <path d="M2.5 6l2.5 2.5L9.5 3.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        )}
+        {state === 'active' && (
+          <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+            <path d="M3 2l5 3-5 3V2z" fill="currentColor" />
+          </svg>
+        )}
+        {state === 'lock' && (
+          <svg width="10" height="12" viewBox="0 0 10 12" fill="none">
+            <rect x="1" y="5" width="8" height="6" rx="1.5" stroke="currentColor" strokeWidth="1.5" />
+            <path d="M3 5V3.5a2 2 0 014 0V5" stroke="currentColor" strokeWidth="1.5" />
+          </svg>
+        )}
+      </div>
+      <span className="step-label">{label}</span>
+      {badge && <span className="step-badge">{badge}</span>}
+    </div>
+  );
+}
+
+/* ── Activity item ── */
+function ActivityItem({
+  color,
+  title,
+  meta,
+  tag,
+}: {
+  color: string;
+  title: string;
+  meta: string;
+  tag?: string;
+}) {
+  return (
+    <li className="act-item">
+      <span className="act-dot" style={{ background: color }} />
+      <div className="act-body">
+        <div className="act-title">{title}</div>
+        <div className="act-meta">{meta}</div>
+        {tag && <span className="act-tag">{tag}</span>}
+      </div>
+    </li>
+  );
+}
+
+/* ── Main page ── */
 export default function DashboardPage() {
   const cd = useCountdown(14);
-  const [heroDate, setHeroDate] = useState('');
   const [progWidth, setProgWidth] = useState('0%');
-  const [ringOffset, setRingOffset] = useState(251.2);
-  const [flipClass, setFlipClass] = useState('');
+  const [barWidths, setBarWidths] = useState([0, 0, 0, 0]);
+  const [vocabFlipped, setVocabFlipped] = useState(false);
   const [deckAdded, setDeckAdded] = useState(false);
-  const [openPanel, setOpenPanel] = useState<string | null>(null);
+  const [heroDate, setHeroDate] = useState('');
 
   useEffect(() => {
-    setHeroDate(new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }));
-    const t1 = setTimeout(() => setProgWidth('73%'), 400);
-    const t2 = setTimeout(() => setRingOffset(251.2 * (1 - 6 / 9)), 300);
-    return () => { clearTimeout(t1); clearTimeout(t2); };
+    setHeroDate(
+      new Date().toLocaleDateString('ru-RU', {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+      })
+    );
+    const t1 = setTimeout(() => setProgWidth('73%'), 300);
+    const t2 = setTimeout(() => setBarWidths([72, 66, 61, 66]), 400);
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+    };
   }, []);
 
-  const togglePanel = (id: string) => setOpenPanel(prev => prev === id ? null : id);
+  const handleDeckAdd = () => {
+    setDeckAdded(true);
+    setTimeout(() => setDeckAdded(false), 2500);
+  };
 
-  const pad = (n: number) => String(n).padStart(2, '0');
+  const scores = [
+    { skill: 'Listening', score: '6.5', delta: '+0.5', color: '#7C6FF7', pct: barWidths[0] },
+    { skill: 'Reading',   score: '6.0', delta: '+0.5', color: '#2DB887', pct: barWidths[1] },
+    { skill: 'Writing',   score: '5.5', delta: '+0.5', color: '#E8961A', pct: barWidths[2] },
+    { skill: 'Speaking',  score: '6.0', delta: '+1.0', color: '#D45785', pct: barWidths[3] },
+  ];
+
+  const roadmap = [
+    { state: 'done'   as const, label: 'Основы и формат IELTS' },
+    { state: 'done'   as const, label: 'Грамматика и словарный запас' },
+    { state: 'done'   as const, label: 'Listening: Sections 1–4' },
+    { state: 'active' as const, label: 'Reading Strategies', badge: 'Сейчас' },
+    { state: 'lock'   as const, label: 'Writing Task 1 & 2' },
+    { state: 'lock'   as const, label: 'Speaking Fluency' },
+    { state: 'lock'   as const, label: 'Полный мок-тест' },
+  ];
+
+  const activity = [
+    { color: '#7C6FF7', title: 'Writing Task 1 — отправлен',             meta: '2 часа назад',                      tag: 'Coherence улучшена → Band 6.5' },
+    { color: '#2DB887', title: 'Reading Practice — Section 3',            meta: 'Вчера · 34/40 верных' },
+    { color: '#E8961A', title: 'Словарный набор — Academic Word List',    meta: 'Вчера · 25 новых слов' },
+    { color: '#888',    title: 'Listening Mock Test #7',                  meta: '2 дня назад · Band 6.5' },
+  ];
 
   return (
     <div className="app-shell">
       <Sidebar />
       <main className="page-main">
 
-        {/* 1 ── HERO */}
-        <section className="hero-section anim d1">
-          <div className="hero-inner">
-            <div className="hero-top">
-              <div>
-                <h1 className="hero-greeting">Welcome back, Yernar! 🎯</h1>
+        {/* ── TOP BAR ── */}
+        <div className="topbar anim d1">
+          <div>
+            <h1 className="greeting">
+              Привет, <span className="greeting-name">Yernar!</span>{' '}
+              <span className="greeting-emoji">🎯</span>
+            </h1>
+            <p className="greeting-sub">Готов к практике сегодня?</p>
+          </div>
+          <div className="date-chip">{heroDate}</div>
+        </div>
+
+        {/* ── BANNER ── */}
+        <section className="banner anim d2">
+          <div className="banner-left">
+            <div className="banner-eyebrow">Ежедневная цель</div>
+            <div className="banner-headline">2 урока + 1 практический тест</div>
+            <div className="banner-progress-wrap">
+              <div className="banner-track">
+                <div className="banner-fill" style={{ width: progWidth }} />
               </div>
-              <div style={{ textAlign: 'right' }}>
-                <div className="hero-date">{heroDate}</div>
-                <div className="daily-goal-card" style={{ marginTop: 8 }}>
-                  <span className="goal-dot"/>
-                  Complete 2 lessons · 1 practice test
-                </div>
+              <div className="banner-pct-row">
+                <span>73% выполнено</span>
+                <span>Осталось: 1 урок</span>
               </div>
             </div>
-            <div>
-              <div className="hero-progress-info">
-                <span className="hero-progress-label">Daily Goal Progress</span>
-                <span className="hero-progress-pct">73%</span>
-              </div>
-              <div className="progress-track">
-                <div className="progress-fill" style={{ width: progWidth }}/>
-              </div>
-              <div className="hero-micro">
-                You&apos;re <span>73% of the way to Band 7.0</span> — keep going!
-              </div>
+          </div>
+          <div className="banner-cd-block">
+            <div className="banner-cd-label">До экзамена</div>
+            <div className="banner-cd-nums">
+              {[['Дн', cd.d], ['Ч', cd.h], ['Мин', cd.m], ['Сек', cd.s]].map(([lbl, val], i) => (
+                <div key={String(lbl)} className="cd-unit">
+                  <div className="cd-num">{pad(Number(val))}</div>
+                  <div className="cd-lbl">{lbl}</div>
+                </div>
+              ))}
             </div>
           </div>
         </section>
 
-        {/* 2 ── SCORES */}
-        <section className="anim d2">
+        {/* ── SCORES ── */}
+        <section className="anim d3">
           <div className="section-header">
-            <span className="section-title">📊 Live Band Scores</span>
-            <span className="section-action">View full report →</span>
+            <span className="section-title">📊 Текущие баллы</span>
+            <span className="section-action">Полный отчёт →</span>
           </div>
           <div className="scores-grid">
-            {[
-              { skill: 'Listening', score: '6.5', delta: '+0.5', color: '#3B82F6', cls: 'listening', pts: 'M0,22 L25,18 L50,20 L75,12 L100,8' },
-              { skill: 'Reading',   score: '6.0', delta: '+0.5', color: '#10B981', cls: 'reading',   pts: 'M0,24 L25,20 L50,22 L75,14 L100,10' },
-              { skill: 'Writing',   score: '5.5', delta: '+0.5', color: '#F59E0B', cls: 'writing',   pts: 'M0,26 L25,24 L50,20 L75,18 L100,14' },
-              { skill: 'Speaking',  score: '6.0', delta: '+1.0', color: '#8B5CF6', cls: 'speaking',  pts: 'M0,28 L25,22 L50,18 L75,14 L100,8' },
-            ].map(c => (
-              <div key={c.skill} className={`score-card ${c.cls}`}>
-                <div className="score-skill">{c.skill}</div>
-                <div className="score-row">
-                  <div className="score-value">{c.score}</div>
-                  <div className="score-badge">↑ {c.delta}</div>
+            {scores.map(c => (
+              <div key={c.skill} className="score-card">
+                <div className="score-top">
+                  <span className="score-skill">{c.skill}</span>
+                  <span className="score-delta">{c.delta} ↑</span>
                 </div>
-                <div className="sparkline-wrap">
-                  <SparkLine color={c.color} points={c.pts}/>
-                </div>
-                <button className="btn-practice">▶ Start Practice</button>
+                <div className="score-num">{c.score}</div>
+                <ScoreBar pct={c.pct} color={c.color} />
+                <div className="score-target">Цель: 7.0</div>
               </div>
             ))}
           </div>
         </section>
 
-        {/* 3 ── LEARNING PATH */}
-        <section className="learning-path-section anim d3">
-          <div className="section-header">
-            <span className="section-title">🗺️ Learning Roadmap</span>
-            <span className="section-action">See all modules →</span>
+        {/* ── MID GRID: Roadmap + Stats ── */}
+        <div className="mid-grid anim d4">
+
+          {/* Roadmap */}
+          <div className="card roadmap-card">
+            <div className="card-title">
+              <svg width="15" height="15" viewBox="0 0 15 15" fill="none" className="card-icon">
+                <path d="M1 2.5h3l2 4-2 4H1M9 6.5h5M11 4.5l3 2-3 2" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              Программа обучения
+            </div>
+            <div className="road-list">
+              {roadmap.map((r, i) => (
+                <RoadStep key={i} {...r} />
+              ))}
+            </div>
           </div>
-          <div className="roadmap-container">
-            <div className="roadmap-grid">
+
+          {/* Stats */}
+          <div className="card stats-card">
+            <div className="card-title">
+              <svg width="15" height="15" viewBox="0 0 15 15" fill="none" className="card-icon">
+                <path d="M2 11V7M6 11V4M10 11V2M14 11V8" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+              </svg>
+              Статистика
+            </div>
+            <div className="stats-list">
               {[
-                { id: 'foundation', label: 'Foundation',       state: 'completed', lessons: ['IELTS Overview','Band Descriptors','Test Format'] },
-                { id: 'grammar',    label: 'Grammar',           state: 'completed', lessons: ['Tense Review','Conditionals','Complex Sentences'] },
-                { id: 'listening',  label: 'Listening Skills',  state: 'completed', lessons: ['Note-Taking','Section 1–4','Academic Lectures'] },
-                { id: 'reading',    label: 'Reading Strategies',state: 'current',   lessons: ['Skimming & Scanning','T/F/NG Questions ← Now','Summary Completion'] },
-                { id: 'wt1',        label: 'Writing Task 1',    state: 'locked',    lessons: [] },
-                { id: 'wt2',        label: 'Writing Task 2',    state: 'locked',    lessons: [] },
-                { id: 'speaking2',  label: 'Speaking Fluency',  state: 'locked',    lessons: [] },
-                { id: 'mock',       label: 'Full Mock Test',    state: 'locked',    lessons: [] },
-              ].map(n => (
-                <div key={n.id} className="node-wrap" onClick={() => n.state !== 'locked' && togglePanel(n.id)}>
-                  <div className={`node ${n.state}`}>
-                    {n.state === 'completed' && (
-                      <svg className="node-icon" viewBox="0 0 20 20" fill="currentColor">
-                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/>
-                      </svg>
-                    )}
-                    {n.state === 'current' && (
-                      <svg className="node-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                      </svg>
-                    )}
-                    {n.state === 'locked' && (
-                      <svg className="node-icon" viewBox="0 0 20 20" fill="currentColor">
-                        <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd"/>
-                      </svg>
-                    )}
-                  </div>
-                  <div className={`node-label${n.state === 'current' ? ' active-label' : ''}`}>{n.label}</div>
-                  {openPanel === n.id && n.lessons.length > 0 && (
-                    <div className="node-panel open">
-                      <div className="panel-title">{n.label}</div>
-                      {n.lessons.map((l, i) => (
-                        <div key={l} className="panel-lesson">
-                          <span className={`lesson-dot ${i === 0 ? 'done' : i === 1 ? 'next' : 'lock'}`}/>
-                          {l}
-                        </div>
-                      ))}
+                { icon: '🔥', label: 'Серия дней',       value: '14 дней',  sub: 'подряд',           pct: 70, color: '#E8961A' },
+                { icon: '⏱',  label: 'Часов учёбы',      value: '47.5',     sub: 'часов всего',      pct: 55, color: '#7C6FF7' },
+                { icon: '✅', label: 'Тестов пройдено',   value: '12 / 30',  sub: 'мок-тестов',       pct: 40, color: '#2DB887' },
+              ].map(s => (
+                <div key={s.label} className="stat-row">
+                  <div className="stat-icon-wrap">{s.icon}</div>
+                  <div className="stat-body">
+                    <div className="stat-name">{s.label}</div>
+                    <div className="stat-val">{s.value} <span className="stat-sub">{s.sub}</span></div>
+                    <div className="stat-mini-track">
+                      <div className="stat-mini-fill" style={{ width: `${s.pct}%`, background: s.color }} />
                     </div>
-                  )}
-                </div>
-              ))}
-              <div className="node-wrap" style={{ gridColumn: '2 / 4', alignItems: 'center' }}>
-                <div className="node locked" style={{ width: 60, height: 60, fontSize: 22 }}>🏆</div>
-                <div className="node-label" style={{ fontSize: 12, fontWeight: 700, color: 'var(--accent-gold)' }}>Exam Ready</div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* 4 ── STATS */}
-        <section className="anim d4" style={{ marginBottom: 28 }}>
-          <div className="section-header">
-            <span className="section-title">⚡ Performance Stats</span>
-          </div>
-          <div className="stats-row">
-            <div className="stat-card">
-              <div className="stat-icon-row">
-                <div className="stat-icon-wrap gold">🔥</div>
-                <div className="stat-tag">Streak</div>
-              </div>
-              <div className="stat-value">14</div>
-              <div className="stat-sub">Days consecutive study</div>
-            </div>
-            <div className="stat-card">
-              <div className="stat-icon-row">
-                <div className="stat-icon-wrap blue">
-                  <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-                    <circle cx="9" cy="9" r="7" stroke="#3B82F6" strokeWidth="1.5"/>
-                    <path d="M9 5v4l2.5 2.5" stroke="#3B82F6" strokeWidth="1.5" strokeLinecap="round"/>
-                  </svg>
-                </div>
-                <div className="stat-tag">Study Time</div>
-              </div>
-              <div className="stat-value">47.5</div>
-              <div className="stat-sub">hours total logged</div>
-            </div>
-            <div className="stat-card">
-              <div className="stat-icon-row">
-                <div className="stat-icon-wrap green">
-                  <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-                    <rect x="2" y="2" width="14" height="14" rx="3" stroke="#10B981" strokeWidth="1.5"/>
-                    <path d="M5.5 9l2.5 2.5 4.5-4.5" stroke="#10B981" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                </div>
-                <div className="stat-tag">Tests</div>
-              </div>
-              <div className="stat-value">12</div>
-              <div className="stat-sub">of 30 tests completed</div>
-              <div className="mini-progress-track">
-                <div className="mini-progress-fill" style={{ width: '40%' }}/>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* 5 ── ACTIVITY + RESUME */}
-        <div className="bottom-grid anim d5">
-          <div className="activity-card">
-            <div className="section-header" style={{ marginBottom: 14 }}>
-              <span className="section-title" style={{ fontSize: 14 }}>📋 Recent Activity</span>
-            </div>
-            <ul className="timeline">
-              {[
-                { dot: 'gold',  title: 'Writing Task 1 Submitted',           meta: '2 hours ago',               feedback: 'Coherence & Cohesion improved → Band 6.5' },
-                { dot: 'blue',  title: 'Reading Practice — Section 3',        meta: 'Yesterday · 34/40 correct' },
-                { dot: 'green', title: 'Vocabulary Deck — Academic Word List', meta: 'Yesterday · 25 new words' },
-                { dot: 'muted', title: 'Listening Mock Test #7',               meta: '2 days ago · Band 6.5' },
-              ].map((item, i) => (
-                <li key={i} className="timeline-item">
-                  <span className={`tl-dot ${item.dot}`}/>
-                  <div className="tl-content">
-                    <div className="tl-title">{item.title}</div>
-                    <div className="tl-meta">{item.meta}</div>
-                    {item.feedback && <div className="tl-feedback">{item.feedback}</div>}
                   </div>
-                </li>
+                </div>
               ))}
+            </div>
+          </div>
+        </div>
+
+        {/* ── BOTTOM GRID: Activity + Vocab ── */}
+        <div className="bottom-grid anim d5">
+
+          {/* Activity */}
+          <div className="card">
+            <div className="card-title">
+              <svg width="15" height="15" viewBox="0 0 15 15" fill="none" className="card-icon">
+                <rect x="1" y="1" width="13" height="13" rx="2" stroke="currentColor" strokeWidth="1.4" />
+                <path d="M4 5h7M4 8h5M4 11h3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+              </svg>
+              Последняя активность
+            </div>
+            <ul className="act-list">
+              {activity.map((a, i) => <ActivityItem key={i} {...a} />)}
             </ul>
           </div>
 
-          <div className="resume-card">
-            <div>
-              <div className="section-title" style={{ fontSize: 14, marginBottom: 14 }}>▶ Resume Learning</div>
-              <div className="resume-stats">
-                {[['T/F','Current','var(--accent-blue)'],['60%','Complete','var(--text-primary)'],['~12m','Left','var(--accent-gold)']].map(([val,key,col])=>(
-                  <div key={key} className="rstat">
-                    <div className="rstat-val" style={{ color: col }}>{val}</div>
-                    <div className="rstat-key">{key}</div>
-                  </div>
-                ))}
+          {/* Vocab + Resume */}
+          <div className="vocab-col">
+            <div className="card vocab-card">
+              <div className="vocab-header">
+                <div className="card-title" style={{ margin: 0 }}>
+                  <svg width="15" height="15" viewBox="0 0 15 15" fill="none" className="card-icon">
+                    <rect x="2" y="1" width="8" height="11" rx="1" stroke="currentColor" strokeWidth="1.4" />
+                    <path d="M5 4h3M5 7h3M5 10h1" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+                    <rect x="5" y="4" width="8" height="10" rx="1" fill="var(--bg-card)" stroke="currentColor" strokeWidth="1.4" />
+                    <path d="M8 7h3M8 10h3M8 13h1" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+                  </svg>
+                  Слово дня
+                </div>
+                <span className="band-pill">Band 8.0</span>
               </div>
-              <div className="resume-title">Reading Strategies</div>
-              <div className="resume-lesson">Lesson 3 of 5 — True/False/Not Given</div>
-              <div className="resume-progress-info"><span>Progress</span><span>60%</span></div>
-              <div className="resume-track"><div className="resume-fill"/></div>
+              <div
+                className={`flip-wrap ${vocabFlipped ? 'flipped' : ''}`}
+                onClick={() => setVocabFlipped(v => !v)}
+              >
+                <div className="flip-inner">
+                  <div className="flip-front">
+                    <div className="flip-word">Idiosyncrasy</div>
+                    <div className="flip-pos">noun · /ˌɪdiəˈsɪŋkrəsi/</div>
+                    <div className="flip-hint">Нажми для перевода</div>
+                  </div>
+                  <div className="flip-back">
+                    <div className="flip-def">Особенность поведения, присущая конкретному человеку; причуда, индивидуальная черта</div>
+                    <div className="flip-ex">&ldquo;One of his idiosyncrasies was turning the volume to an odd number.&rdquo;</div>
+                  </div>
+                </div>
+              </div>
+              <button
+                className={`btn-deck ${deckAdded ? 'added' : ''}`}
+                onClick={handleDeckAdd}
+              >
+                {deckAdded ? '✓ Добавлено в колоду!' : '+ Добавить в мою колоду'}
+              </button>
             </div>
-            <button className="btn-resume">⚡ Resume where you left off</button>
+
+            <div className="resume-card card">
+              <div className="resume-lesson">
+                <div className="resume-module">Reading Strategies</div>
+                <div className="resume-name">Урок 3 из 5 — True / False / Not Given</div>
+                <div className="resume-prog-info">
+                  <span>Прогресс</span><span>60%</span>
+                </div>
+                <div className="resume-track">
+                  <div className="resume-fill" />
+                </div>
+              </div>
+              <button className="btn-resume">⚡ Продолжить с места остановки</button>
+            </div>
           </div>
         </div>
 
-        {/* 6 ── VOCAB + MOCK */}
-        <div className="vocab-mock-section anim d6">
-
-          {/* Vocab flip card */}
-          <div className="vocab-card">
-            <div className="vocab-header">
-              <div className="section-title" style={{ fontSize: 14 }}>💬 Word of the Day</div>
-              <div className="band-tag">Band 8.0</div>
-            </div>
-            <div className="flip-card-wrapper" onClick={() => setFlipClass(c => c ? '' : 'flipped')}>
-              <div className={`flip-card ${flipClass}`}>
-                <div className="flip-front">
-                  <div className="flip-word">Idiosyncrasy</div>
-                  <div className="flip-part">noun /ˌɪdiəˈsɪŋkrəsi/</div>
-                  <div className="flip-hint">Tap to reveal definition</div>
-                </div>
-                <div className="flip-back">
-                  <div className="flip-def">A mode of behaviour or way of thought peculiar to an individual.</div>
-                  <div className="flip-example">&ldquo;One of his idiosyncrasies was turning the volume to an odd number.&rdquo;</div>
-                </div>
-              </div>
-            </div>
-            <button
-              className={`btn-add-deck${deckAdded ? ' added' : ''}`}
-              onClick={() => { setDeckAdded(true); setTimeout(() => setDeckAdded(false), 2500); }}
-            >
-              {deckAdded ? '✓ Added to deck!' : '+ Add to my deck'}
-            </button>
-          </div>
-
-          {/* Countdown */}
-          <div className="mock-banner">
-            <div className="mock-top">
-              <div>
-                <div className="mock-title">Full IELTS Mock Examination</div>
-                <div className="mock-duration">Duration: 2h 45min · All 4 Sections</div>
-              </div>
-              <div className="mock-badge">⚠ Upcoming</div>
-            </div>
-            <div style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 10, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
-              Time Until Exam
-            </div>
-            <div className="countdown-display">
-              {[['Days', cd.d], ['Hours', cd.h], ['Mins', cd.m], ['Secs', cd.s]].map(([lbl, val], i) => (
-                <>
-                  {i > 0 && <div key={`sep-${i}`} className="countdown-sep">:</div>}
-                  <div key={String(lbl)} className="countdown-unit">
-                    <div className="countdown-num">{pad(Number(val))}</div>
-                    <div className="countdown-lbl">{lbl}</div>
-                  </div>
-                </>
-              ))}
-            </div>
-            <button className="btn-exam">🎯 Register for Mock Test Now</button>
-          </div>
-        </div>
-
-        <div style={{ height: 40 }}/>
+        <div style={{ height: 40 }} />
       </main>
 
       <style>{`
-        /* ── Hero ── */
-        .hero-section { margin-bottom: 28px; }
-        .hero-inner {
-          background: linear-gradient(135deg,rgba(59,130,246,.12) 0%,rgba(99,102,241,.08) 50%,rgba(20,28,51,0) 100%);
-          border: 1px solid rgba(59,130,246,.15);
-          border-radius: var(--radius-xl);
-          padding: 28px 32px;
-          position: relative; overflow: hidden;
+        /* ── Animations ── */
+        .anim { animation: fadeUp .4s ease-out both }
+        .d1 { animation-delay: .05s } .d2 { animation-delay: .1s }
+        .d3 { animation-delay: .15s } .d4 { animation-delay: .2s }
+        .d5 { animation-delay: .25s }
+        @keyframes fadeUp { from { opacity:0; transform:translateY(12px) } to { opacity:1; transform:none } }
+
+        /* ── Top bar ── */
+        .topbar { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px }
+        .greeting { font-size:22px; font-weight:700; line-height:1.2; font-family:var(--font-heading) }
+        .greeting-name { color:var(--accent-blue) }
+        .greeting-emoji { font-size:20px }
+        .greeting-sub { font-size:13px; color:var(--text-secondary); margin-top:3px }
+        .date-chip { font-size:11px; color:var(--text-secondary); background:rgba(255,255,255,.04); border:1px solid var(--border); border-radius:var(--radius-md); padding:6px 12px }
+
+        /* ── Banner ── */
+        .banner {
+          display:flex; justify-content:space-between; align-items:center; gap:24px;
+          background:#5B4EDD;
+          border-radius:var(--radius-xl); padding:22px 28px; margin-bottom:20px;
+          position:relative; overflow:hidden;
         }
-        .hero-inner::before {
-          content:''; position:absolute; right:-60px; top:-60px;
-          width:220px; height:220px;
-          background:radial-gradient(circle,rgba(59,130,246,.12) 0%,transparent 70%);
-          pointer-events:none;
+        .banner::before {
+          content:''; position:absolute; right:-40px; top:-40px;
+          width:180px; height:180px; border-radius:50%; background:rgba(255,255,255,.06); pointer-events:none;
         }
-        .hero-top { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:20px; }
-        .hero-greeting { font-family:var(--font-heading); font-size:26px; font-weight:800; }
-        .hero-date { font-size:12px; color:var(--text-secondary); }
-        .daily-goal-card {
-          display:flex; align-items:center; gap:10px;
-          background:rgba(255,255,255,.04); border:1px solid var(--border);
-          border-radius:var(--radius-md); padding:10px 14px;
-          font-size:12px; color:var(--text-secondary);
+        .banner::after {
+          content:''; position:absolute; left:40%; bottom:-50px;
+          width:120px; height:120px; border-radius:50%; background:rgba(255,255,255,.04); pointer-events:none;
         }
-        .goal-dot { width:8px; height:8px; border-radius:50%; background:var(--accent-blue); box-shadow:0 0 6px var(--accent-blue); }
-        .hero-progress-info { display:flex; justify-content:space-between; margin-bottom:8px; }
-        .hero-progress-label { font-size:12px; color:var(--text-secondary); }
-        .hero-progress-pct { font-family:var(--font-mono); font-size:13px; font-weight:600; color:var(--accent-blue); }
-        .hero-micro { margin-top:8px; font-size:11px; color:var(--text-secondary); }
-        .hero-micro span { color:var(--accent-gold); font-weight:600; }
+        .banner-left { position:relative; z-index:1; flex:1 }
+        .banner-eyebrow { font-size:10px; color:rgba(255,255,255,.65); text-transform:uppercase; letter-spacing:.1em; margin-bottom:4px }
+        .banner-headline { font-size:16px; font-weight:700; color:#fff; font-family:var(--font-heading); margin-bottom:14px }
+        .banner-track { height:5px; background:rgba(255,255,255,.2); border-radius:100px; overflow:hidden; margin-bottom:6px }
+        .banner-fill { height:100%; border-radius:100px; background:#fff; transition:width .8s cubic-bezier(.4,0,.2,1) }
+        .banner-pct-row { display:flex; justify-content:space-between; font-size:11px; color:rgba(255,255,255,.65) }
+        .banner-cd-block { position:relative; z-index:1; background:rgba(255,255,255,.12); border-radius:var(--radius-lg); padding:14px 18px; text-align:center; flex-shrink:0 }
+        .banner-cd-label { font-size:10px; color:rgba(255,255,255,.65); text-transform:uppercase; letter-spacing:.08em; margin-bottom:8px }
+        .banner-cd-nums { display:flex; gap:6px; align-items:flex-end }
+        .cd-unit { text-align:center }
+        .cd-num { font-family:var(--font-mono); font-size:22px; font-weight:700; color:#fff; line-height:1 }
+        .cd-lbl { font-size:9px; color:rgba(255,255,255,.55); margin-top:3px; text-transform:uppercase; letter-spacing:.06em }
+
+        /* ── Section header ── */
+        .section-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px }
+        .section-title { font-size:13px; font-weight:600 }
+        .section-action { font-size:12px; color:var(--accent-blue); cursor:pointer }
+        .section-action:hover { text-decoration:underline }
 
         /* ── Scores ── */
-        .scores-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:28px; }
+        .scores-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:16px }
         .score-card {
           background:var(--bg-card); border:1px solid var(--border);
-          border-radius:var(--radius-lg); padding:18px 16px;
-          cursor:pointer; transition:var(--transition); position:relative; overflow:hidden;
+          border-radius:var(--radius-lg); padding:16px;
+          transition:transform .15s, box-shadow .15s;
         }
-        .score-card::before {
-          content:''; position:absolute; top:0; left:0; right:0; height:2px; opacity:0; transition:opacity .2s;
-        }
-        .score-card.listening::before { background:linear-gradient(90deg,#3B82F6,#6366F1); }
-        .score-card.reading::before   { background:linear-gradient(90deg,#10B981,#06B6D4); }
-        .score-card.writing::before   { background:linear-gradient(90deg,#F59E0B,#EF4444); }
-        .score-card.speaking::before  { background:linear-gradient(90deg,#8B5CF6,#EC4899); }
-        .score-card:hover { transform:translateY(-3px); background:var(--bg-card-hover); }
-        .score-card:hover::before { opacity:1; }
-        .score-skill { font-size:10px; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:var(--text-secondary); margin-bottom:8px; }
-        .score-row { display:flex; align-items:flex-end; justify-content:space-between; margin-bottom:10px; }
-        .score-value { font-family:var(--font-heading); font-size:34px; font-weight:800; line-height:1; }
-        .score-badge {
-          display:flex; align-items:center; gap:3px;
-          background:rgba(245,158,11,.12); border:1px solid rgba(245,158,11,.25);
-          border-radius:20px; padding:3px 8px;
-          font-family:var(--font-mono); font-size:10px; font-weight:600; color:var(--accent-gold);
-          margin-bottom:4px;
-        }
-        .sparkline-wrap { height:32px; margin-bottom:12px; }
-        .btn-practice {
-          width:100%; padding:7px;
-          background:rgba(59,130,246,.08); border:1px solid rgba(59,130,246,.2);
-          border-radius:var(--radius-sm); color:var(--accent-blue);
-          font-family:var(--font-body); font-size:11px; font-weight:600;
-          cursor:pointer; transition:var(--transition);
-        }
-        .btn-practice:hover { background:rgba(59,130,246,.16); }
+        .score-card:hover { transform:translateY(-2px); box-shadow:0 8px 24px rgba(0,0,0,.2) }
+        .score-top { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px }
+        .score-skill { font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:.08em; color:var(--text-secondary) }
+        .score-delta { font-size:10px; font-family:var(--font-mono); background:rgba(16,185,129,.1); border:1px solid rgba(16,185,129,.2); color:#10B981; padding:2px 7px; border-radius:100px }
+        .score-num { font-family:var(--font-mono); font-size:32px; font-weight:700; line-height:1 }
+        .score-target { font-size:10px; color:var(--text-muted); margin-top:5px }
 
-        /* ── Learning path ── */
-        .learning-path-section { margin-bottom:28px; }
-        .roadmap-container {
-          background:var(--bg-card); border:1px solid var(--border);
-          border-radius:var(--radius-xl); padding:28px 32px; position:relative; overflow:hidden;
+        /* ── Cards ── */
+        .card { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-lg); padding:18px }
+        .card-title {
+          display:flex; align-items:center; gap:7px;
+          font-size:13px; font-weight:600; margin-bottom:16px;
         }
-        .roadmap-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:0; position:relative; }
-        .node-wrap { position:relative; z-index:1; display:flex; flex-direction:column; align-items:center; padding:12px 8px 20px; }
-        .node {
-          width:52px; height:52px; border-radius:50%;
-          display:flex; align-items:center; justify-content:center;
-          cursor:pointer; transition:var(--transition); position:relative; flex-shrink:0;
+        .card-icon { color:var(--accent-blue); flex-shrink:0 }
+
+        /* ── Mid grid ── */
+        .mid-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:16px }
+
+        /* ── Roadmap ── */
+        .road-list { display:flex; flex-direction:column }
+        .road-step {
+          display:flex; align-items:center; gap:10px;
+          padding:8px 0; position:relative;
         }
-        .node.completed { background:linear-gradient(135deg,var(--accent-blue),#6366F1); box-shadow:0 0 16px rgba(59,130,246,.35); }
-        .node.completed:hover { transform:scale(1.08); }
-        .node.current { background:linear-gradient(135deg,#F59E0B,#EF4444); box-shadow:0 0 20px rgba(245,158,11,.4); }
-        .node.current::after {
-          content:''; position:absolute; inset:-8px; border-radius:50%;
-          border:2px solid rgba(245,158,11,.4);
-          animation:pulse-ring 2s cubic-bezier(.4,0,.6,1) infinite;
+        .road-step:not(:last-child)::after {
+          content:''; position:absolute; left:12px; top:30px;
+          width:1px; height:calc(100% - 10px);
+          background:var(--border);
         }
-        @keyframes pulse-ring { 0%{transform:scale(.9);opacity:1} 50%{transform:scale(1.15);opacity:.3} 100%{transform:scale(.9);opacity:1} }
-        .node.locked { background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.08); opacity:.45; cursor:not-allowed; }
-        .node-icon { width:20px; height:20px; color:#fff; }
-        .node-label { font-size:10px; font-weight:600; color:var(--text-secondary); text-align:center; margin-top:8px; max-width:80px; line-height:1.3; }
-        .node-label.active-label { color:var(--text-primary); }
-        .node-panel {
-          position:absolute; top:calc(100% + 8px); left:50%; transform:translateX(-50%);
-          width:220px; background:#1A2444; border:1px solid rgba(59,130,246,.25);
-          border-radius:var(--radius-md); padding:14px; z-index:200;
-          box-shadow:0 20px 40px rgba(0,0,0,.5); animation:fadeUp .2s ease-out;
+        .step-node {
+          width:25px; height:25px; border-radius:50%; display:flex;
+          align-items:center; justify-content:center; flex-shrink:0; position:relative; z-index:1;
         }
-        .panel-title { font-size:12px; font-weight:700; margin-bottom:10px; }
-        .panel-lesson { display:flex; align-items:center; gap:8px; padding:6px 0; border-bottom:1px solid var(--border-subtle); font-size:11px; color:var(--text-secondary); }
-        .panel-lesson:last-child { border:none; }
-        .lesson-dot { width:6px; height:6px; border-radius:50%; flex-shrink:0; }
-        .lesson-dot.done { background:var(--accent-blue); }
-        .lesson-dot.next { background:var(--accent-gold); }
-        .lesson-dot.lock { background:var(--text-muted); }
+        .road-done .step-node { background:#5B4EDD; color:#fff }
+        .road-active .step-node { background:var(--bg-card); border:2px solid #5B4EDD; color:#5B4EDD }
+        .road-lock .step-node { background:rgba(255,255,255,.04); border:1px solid var(--border); color:var(--text-muted) }
+        .step-label { font-size:12px; flex:1 }
+        .road-done .step-label { color:var(--text-secondary); text-decoration:line-through; text-decoration-color:var(--border) }
+        .road-active .step-label { font-weight:600; color:var(--text-primary) }
+        .road-lock .step-label { color:var(--text-muted) }
+        .step-badge {
+          font-size:10px; padding:2px 7px; border-radius:100px;
+          background:rgba(91,78,221,.15); border:1px solid rgba(91,78,221,.3); color:#9B8FF7;
+          flex-shrink:0;
+        }
 
         /* ── Stats ── */
-        .stats-row { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-bottom:28px; }
-        .stat-card { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-lg); padding:20px; transition:var(--transition); }
-        .stat-card:hover { transform:translateY(-2px); box-shadow:var(--shadow-glow); }
-        .stat-icon-row { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
-        .stat-icon-wrap { width:36px; height:36px; border-radius:var(--radius-sm); display:flex; align-items:center; justify-content:center; }
-        .stat-icon-wrap.blue  { background:rgba(59,130,246,.12); }
-        .stat-icon-wrap.gold  { background:rgba(245,158,11,.12); }
-        .stat-icon-wrap.green { background:rgba(16,185,129,.12); }
-        .stat-tag { font-size:10px; font-weight:600; letter-spacing:.06em; text-transform:uppercase; color:var(--text-muted); }
-        .stat-value { font-family:var(--font-mono); font-size:28px; font-weight:700; line-height:1; margin-bottom:4px; }
-        .stat-sub { font-size:11px; color:var(--text-secondary); }
-        .mini-progress-track { height:4px; background:rgba(255,255,255,.06); border-radius:100px; overflow:hidden; margin-top:10px; }
-        .mini-progress-fill  { height:100%; border-radius:100px; background:linear-gradient(90deg,var(--accent-green),#06B6D4); }
+        .stats-list { display:flex; flex-direction:column; gap:14px }
+        .stat-row { display:flex; align-items:center; gap:12px }
+        .stat-icon-wrap { font-size:18px; width:36px; height:36px; display:flex; align-items:center; justify-content:center; background:rgba(255,255,255,.04); border:1px solid var(--border); border-radius:var(--radius-sm); flex-shrink:0 }
+        .stat-body { flex:1 }
+        .stat-name { font-size:10px; color:var(--text-muted); text-transform:uppercase; letter-spacing:.06em; margin-bottom:2px }
+        .stat-val { font-size:15px; font-weight:600 }
+        .stat-sub { font-size:11px; font-weight:400; color:var(--text-secondary) }
+        .stat-mini-track { height:3px; background:rgba(255,255,255,.06); border-radius:100px; overflow:hidden; margin-top:5px }
+        .stat-mini-fill { height:100%; border-radius:100px; transition:width .7s cubic-bezier(.4,0,.2,1) }
 
-        /* ── Activity + resume ── */
-        .bottom-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:28px; }
-        .activity-card { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-lg); padding:20px; }
-        .timeline { list-style:none; }
-        .timeline-item { display:flex; gap:12px; padding-bottom:16px; position:relative; }
-        .timeline-item:last-child { padding-bottom:0; }
-        .timeline-item::before { content:''; position:absolute; left:5px; top:18px; width:1px; height:calc(100% - 8px); background:var(--border); }
-        .timeline-item:last-child::before { display:none; }
-        .tl-dot { width:12px; height:12px; border-radius:50%; flex-shrink:0; margin-top:3px; position:relative; z-index:1; }
-        .tl-dot.blue  { background:var(--accent-blue);  box-shadow:0 0 8px rgba(59,130,246,.5); }
-        .tl-dot.gold  { background:var(--accent-gold);  box-shadow:0 0 8px rgba(245,158,11,.5); }
-        .tl-dot.green { background:var(--accent-green); box-shadow:0 0 8px rgba(16,185,129,.5); }
-        .tl-dot.muted { background:var(--text-muted); }
-        .tl-content { flex:1; }
-        .tl-title { font-size:12px; font-weight:600; margin-bottom:2px; }
-        .tl-meta  { font-size:11px; color:var(--text-secondary); }
-        .tl-feedback { margin-top:6px; background:rgba(16,185,129,.08); border:1px solid rgba(16,185,129,.15); border-radius:6px; padding:6px 8px; font-size:10px; color:var(--accent-green); }
-        .resume-card { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-lg); padding:20px; display:flex; flex-direction:column; justify-content:space-between; }
-        .resume-title { font-family:var(--font-heading); font-size:15px; font-weight:700; margin-bottom:6px; }
-        .resume-lesson { font-size:12px; color:var(--text-secondary); margin-bottom:4px; }
-        .resume-progress-info { display:flex; justify-content:space-between; font-size:11px; color:var(--text-muted); margin-bottom:8px; }
-        .resume-track { height:4px; background:rgba(255,255,255,.06); border-radius:100px; overflow:hidden; margin-bottom:20px; }
-        .resume-fill  { height:100%; border-radius:100px; background:linear-gradient(90deg,var(--accent-gold),var(--accent-blue)); width:60%; }
-        .resume-stats { display:flex; gap:12px; margin-bottom:16px; }
-        .rstat { flex:1; background:rgba(255,255,255,.03); border:1px solid var(--border); border-radius:var(--radius-sm); padding:10px; text-align:center; }
-        .rstat-val { font-family:var(--font-mono); font-size:16px; font-weight:700; }
-        .rstat-key { font-size:9px; color:var(--text-muted); text-transform:uppercase; letter-spacing:.08em; margin-top:2px; }
+        /* ── Bottom grid ── */
+        .bottom-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px }
+        .vocab-col { display:flex; flex-direction:column; gap:12px }
+
+        /* ── Activity ── */
+        .act-list { list-style:none; display:flex; flex-direction:column }
+        .act-item { display:flex; gap:10px; padding:10px 0; border-bottom:1px solid var(--border-subtle) }
+        .act-item:last-child { border:none; padding-bottom:0 }
+        .act-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; margin-top:5px }
+        .act-body { flex:1 }
+        .act-title { font-size:12px; font-weight:600; margin-bottom:2px }
+        .act-meta { font-size:11px; color:var(--text-secondary) }
+        .act-tag { display:inline-block; margin-top:5px; font-size:10px; padding:2px 7px; border-radius:100px; background:rgba(16,185,129,.08); border:1px solid rgba(16,185,129,.15); color:#10B981 }
+
+        /* ── Vocab card ── */
+        .vocab-card { display:flex; flex-direction:column; gap:12px }
+        .vocab-header { display:flex; justify-content:space-between; align-items:center }
+        .band-pill { font-size:10px; padding:2px 8px; border-radius:100px; background:rgba(245,158,11,.1); border:1px solid rgba(245,158,11,.2); color:var(--accent-gold); font-family:var(--font-mono) }
+        .flip-wrap { perspective:800px; height:120px; cursor:pointer }
+        .flip-inner {
+          width:100%; height:100%; position:relative;
+          transform-style:preserve-3d; transition:transform .55s cubic-bezier(.4,0,.2,1);
+        }
+        .flip-wrap.flipped .flip-inner { transform:rotateY(180deg) }
+        .flip-front, .flip-back {
+          position:absolute; inset:0; backface-visibility:hidden; -webkit-backface-visibility:hidden;
+          border-radius:var(--radius-md); display:flex; flex-direction:column;
+          align-items:center; justify-content:center; text-align:center; padding:14px;
+          border:1px solid var(--border); background:rgba(255,255,255,.02);
+        }
+        .flip-back { transform:rotateY(180deg) }
+        .flip-word { font-size:22px; font-weight:700; font-family:var(--font-heading); margin-bottom:4px }
+        .flip-pos { font-size:10px; color:var(--text-secondary); font-style:italic }
+        .flip-hint { font-size:10px; color:var(--text-muted); margin-top:8px }
+        .flip-def { font-size:12px; color:var(--text-secondary); line-height:1.55; margin-bottom:6px }
+        .flip-ex { font-size:10px; color:var(--text-muted); font-style:italic; line-height:1.5 }
+        .btn-deck {
+          width:100%; padding:8px;
+          background:rgba(245,158,11,.06); border:1px solid rgba(245,158,11,.18);
+          border-radius:var(--radius-sm); color:var(--accent-gold);
+          font-family:var(--font-body); font-size:11px; font-weight:600;
+          cursor:pointer; transition:all .15s;
+        }
+        .btn-deck:hover { background:rgba(245,158,11,.12) }
+        .btn-deck.added { background:rgba(16,185,129,.08); border-color:rgba(16,185,129,.2); color:#10B981 }
+
+        /* ── Resume card ── */
+        .resume-card { display:flex; flex-direction:column; justify-content:space-between; gap:14px }
+        .resume-module { font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.08em; color:var(--accent-blue); margin-bottom:3px }
+        .resume-name { font-size:13px; font-weight:600; font-family:var(--font-heading); margin-bottom:10px }
+        .resume-prog-info { display:flex; justify-content:space-between; font-size:10px; color:var(--text-muted); margin-bottom:5px }
+        .resume-track { height:4px; background:rgba(255,255,255,.06); border-radius:100px; overflow:hidden }
+        .resume-fill { height:100%; width:60%; border-radius:100px; background:linear-gradient(90deg,var(--accent-gold),var(--accent-blue)) }
         .btn-resume {
-          width:100%; padding:12px;
-          background:linear-gradient(135deg,var(--accent-blue),#6366F1);
+          width:100%; padding:11px;
+          background:linear-gradient(135deg,#5B4EDD,#4F46E5);
           border:none; border-radius:var(--radius-md); color:#fff;
           font-family:var(--font-body); font-size:13px; font-weight:600;
-          cursor:pointer; transition:var(--transition);
+          cursor:pointer; transition:opacity .15s;
         }
-        .btn-resume:hover { transform:translateY(-1px); box-shadow:0 8px 25px rgba(59,130,246,.4); }
+        .btn-resume:hover { opacity:.88 }
 
-        /* ── Vocab + mock ── */
-        .vocab-mock-section { margin-bottom:28px; display:grid; grid-template-columns:1fr 1fr; gap:14px; }
-        .vocab-card { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-lg); padding:20px; }
-        .vocab-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; }
-        .band-tag { background:rgba(245,158,11,.1); border:1px solid rgba(245,158,11,.2); color:var(--accent-gold); font-size:10px; font-weight:600; letter-spacing:.06em; padding:3px 8px; border-radius:20px; font-family:var(--font-mono); }
-        .flip-card-wrapper { perspective:1000px; height:160px; margin-bottom:14px; cursor:pointer; }
-        .flip-card { width:100%; height:100%; position:relative; transform-style:preserve-3d; transition:transform .6s cubic-bezier(.4,0,.2,1); }
-        .flip-card.flipped { transform:rotateY(180deg); }
-        .flip-front,.flip-back {
-          position:absolute; inset:0; backface-visibility:hidden; -webkit-backface-visibility:hidden;
-          border-radius:var(--radius-md); display:flex; flex-direction:column; align-items:center; justify-content:center;
-          padding:20px; text-align:center; border:1px solid rgba(59,130,246,.12);
+        /* ── Responsive ── */
+        @media (max-width: 1100px) {
+          .scores-grid { grid-template-columns: repeat(2,1fr) }
         }
-        .flip-front { background:linear-gradient(135deg,rgba(59,130,246,.08),rgba(99,102,241,.05)); }
-        .flip-back  { background:linear-gradient(135deg,rgba(245,158,11,.08),rgba(239,68,68,.04)); transform:rotateY(180deg); }
-        .flip-word { font-family:var(--font-heading); font-size:26px; font-weight:800; margin-bottom:6px; }
-        .flip-part { font-size:11px; color:var(--text-secondary); font-style:italic; }
-        .flip-hint { font-size:10px; color:var(--text-muted); margin-top:10px; }
-        .flip-def  { font-size:12px; color:var(--text-secondary); line-height:1.5; margin-bottom:8px; }
-        .flip-example { font-size:11px; color:var(--text-muted); font-style:italic; line-height:1.4; padding:8px; background:rgba(255,255,255,.03); border-radius:6px; }
-        .btn-add-deck {
-          width:100%; padding:9px;
-          background:rgba(245,158,11,.08); border:1px solid rgba(245,158,11,.2);
-          border-radius:var(--radius-sm); color:var(--accent-gold);
-          font-family:var(--font-body); font-size:12px; font-weight:600; cursor:pointer; transition:var(--transition);
+        @media (max-width: 800px) {
+          .mid-grid, .bottom-grid { grid-template-columns: 1fr }
+          .banner { flex-direction: column; align-items: flex-start }
+          .banner-cd-block { width: 100% }
+          .banner-cd-nums { justify-content: center }
         }
-        .btn-add-deck:hover { background:rgba(245,158,11,.14); }
-        .btn-add-deck.added { background:rgba(16,185,129,.1); border-color:rgba(16,185,129,.25); color:var(--accent-green); }
-        .mock-banner { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-lg); padding:20px; }
-        .mock-top { display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; }
-        .mock-badge { background:rgba(239,68,68,.1); border:1px solid rgba(239,68,68,.25); color:#EF4444; font-size:9px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; padding:3px 8px; border-radius:20px; }
-        .mock-title    { font-family:var(--font-heading); font-size:15px; font-weight:700; margin-bottom:4px; }
-        .mock-duration { font-size:11px; color:var(--text-secondary); }
-        .countdown-display { display:flex; gap:8px; align-items:center; margin-bottom:16px; }
-        .countdown-unit { text-align:center; flex:1; background:rgba(255,255,255,.04); border:1px solid var(--border); border-radius:var(--radius-sm); padding:10px 6px; }
-        .countdown-num  { font-family:var(--font-mono); font-size:22px; font-weight:700; line-height:1; }
-        .countdown-lbl  { font-size:9px; color:var(--text-muted); margin-top:3px; text-transform:uppercase; letter-spacing:.08em; }
-        .countdown-sep  { font-family:var(--font-mono); font-size:20px; color:var(--text-muted); line-height:1; margin-top:-6px; }
-        .btn-exam {
-          width:100%; padding:13px;
-          background:transparent; border:2px solid var(--accent-blue);
-          border-radius:var(--radius-md); color:var(--accent-blue);
-          font-family:var(--font-body); font-size:13px; font-weight:700; cursor:pointer; transition:var(--transition);
-        }
-        .btn-exam:hover { background:var(--accent-blue); color:#fff; transform:translateY(-1px); }
-
-        /* Responsive */
-        @media(max-width:1200px){ .scores-grid{grid-template-columns:repeat(2,1fr);} .roadmap-grid{grid-template-columns:repeat(3,1fr);} }
-        @media(max-width:900px){ .bottom-grid,.vocab-mock-section{grid-template-columns:1fr;} .stats-row{grid-template-columns:repeat(2,1fr);} }
       `}</style>
     </div>
   );
