@@ -2,7 +2,7 @@ import type { Lesson } from "@/types/lesson";
 
 const b1: Lesson = {
   id: "b1",
-  level: "B1",           // ← обязательно
+  level: "B1",
   band: "B",
   number: 1,
   title: "Present Perfect Continuous",
@@ -75,7 +75,7 @@ const b1: Lesson = {
         { word: "infrastructure", translation: "инфраструктура" },
         { word: "congestion", translation: "пробки" },
       ],
-      lifehack: "", // ← добавьте это поле (обязательное по типу!)
+      lifehack: "Ищи глаголы с have been + V-ing — они показывают продолжающиеся тенденции.",
     },
   ],
 
