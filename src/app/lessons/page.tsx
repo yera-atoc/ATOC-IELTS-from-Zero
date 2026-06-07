@@ -1,7 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { getAllLessons, getLessonsByBand } from '@/data';
+import { getLessonsByBand } from '@/data';
 import type { CEFRBand } from '@/types/lesson';
 
 const BAND_META: Record<CEFRBand, { label: string; sub: string; color: string; bg: string; total: number }> = {
@@ -11,12 +11,14 @@ const BAND_META: Record<CEFRBand, { label: string; sub: string; color: string; b
 };
 
 function getBandSlots(band: CEFRBand, available: any[]) {
-  const availableMap = new Map(available.map((l: any) => [l.id, l]));
+  // ПРИВОДИМ К НИЖНЕМУ РЕГИСТРУ И ID УРОКА И ИСКОМЫЙ ID
+  const availableMap = new Map(available.map((l: any) => [l.id.toLowerCase(), l]));
+  
   return Array.from({ length: 20 }, (_, i) => {
-    const id = `${band.toLowerCase()}${i + 1}`;
+    const id = `${band.toLowerCase()}${i + 1}`; // генерирует 'a1'...'a20' или 'b1'...'b20'
     const lesson = availableMap.get(id);
     return {
-      id,
+      id: id,
       title: lesson?.title ?? `Урок ${band}${i + 1}`,
       available: !!lesson,
     };
@@ -27,37 +29,21 @@ export default function LessonsPage() {
   const [active, setActive] = useState<CEFRBand>('A');
   const router = useRouter();
 
+  // Получаем список для выбранного уровня
+  const currentLessons = getLessonsByBand(active);
+  const slots = getBandSlots(active, currentLessons);
+
   return (
     <div style={{ background: '#F5F5F7', minHeight: '100vh', padding: '28px' }}>
-      
-      {/* Кнопка Назад в стиле Apple */}
       <button
         onClick={() => router.back()}
-        style={{
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: '6px',
-          color: '#0071E3',
-          fontSize: '17px',
-          fontWeight: '600',
-          background: 'none',
-          border: 'none',
-          padding: '8px 0',
-          marginBottom: '24px',
-          cursor: 'pointer',
-        }}
-        onMouseEnter={(e) => (e.currentTarget.style.color = '#0058B0')}
-        onMouseLeave={(e) => (e.currentTarget.style.color = '#0071E3')}
+        style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', color: '#0071E3', fontSize: '17px', fontWeight: '600', background: 'none', border: 'none', padding: '8px 0', marginBottom: '24px', cursor: 'pointer' }}
       >
         ← Назад
       </button>
 
-      <h1 style={{ fontSize: 28, fontWeight: 700, letterSpacing: '-0.035em', color: '#1D1D1F', marginBottom: 6 }}>
-        Уроки
-      </h1>
-      <p style={{ fontSize: 15, color: '#8E8E93', marginBottom: 28 }}>
-        Выбери уровень и начни обучение
-      </p>
+      <h1 style={{ fontSize: 28, fontWeight: 700, letterSpacing: '-0.035em', color: '#1D1D1F', marginBottom: 6 }}>Уроки</h1>
+      <p style={{ fontSize: 15, color: '#8E8E93', marginBottom: 28 }}>Выбери уровень и начни обучение</p>
 
       {/* Band Cards */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 12, marginBottom: 32 }}>
@@ -78,6 +64,7 @@ export default function LessonsPage() {
                 padding: '20px',
                 textAlign: 'left',
                 boxShadow: isActive ? `0 8px 24px ${m.color}22` : 'none',
+                cursor: 'pointer'
               }}
             >
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
@@ -101,15 +88,11 @@ export default function LessonsPage() {
       {/* Lesson List */}
       <div style={{ background: '#fff', border: '1px solid #E8E8ED', borderRadius: 16, overflow: 'hidden' }}>
         <div style={{ padding: '16px 20px', borderBottom: '1px solid #F2F2F7', display: 'flex', justifyContent: 'space-between' }}>
-          <div style={{ fontSize: 15, fontWeight: 700 }}>
-            {BAND_META[active].label} — {BAND_META[active].sub}
-          </div>
-          <span style={{ fontSize: 12, color: '#8E8E93' }}>
-            {getLessonsByBand(active).length} из {BAND_META[active].total} уроков
-          </span>
+          <div style={{ fontSize: 15, fontWeight: 700 }}>{BAND_META[active].label} — {BAND_META[active].sub}</div>
+          <span style={{ fontSize: 12, color: '#8E8E93' }}>{currentLessons.length} из {BAND_META[active].total} уроков</span>
         </div>
 
-        {getBandSlots(active, getLessonsByBand(active)).map((slot, i, arr) => (
+        {slots.map((slot, i, arr) => (
           <div
             key={slot.id}
             onClick={() => slot.available && router.push(`/lessons/${slot.id}`)}
@@ -123,28 +106,13 @@ export default function LessonsPage() {
               opacity: slot.available ? 1 : 0.45,
             }}
           >
-            <div style={{
-              width: 36, height: 36, borderRadius: '50%',
-              background: slot.available ? '#EEEDFE' : '#F2F2F7',
-              color: slot.available ? '#5E5CE6' : '#C7C7CC',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontWeight: 700,
-              fontSize: 13
-            }}>
+            <div style={{ width: 36, height: 36, borderRadius: '50%', background: slot.available ? '#EEEDFE' : '#F2F2F7', color: slot.available ? '#5E5CE6' : '#C7C7CC', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 13 }}>
               {slot.available ? slot.id.toUpperCase() : '🔒'}
             </div>
-
             <div style={{ flex: 1 }}>
               <div style={{ fontSize: 14, fontWeight: 500 }}>{slot.title}</div>
-              {slot.available ? (
-                <div style={{ fontSize: 12, color: '#30D158' }}>Доступен</div>
-              ) : (
-                <div style={{ fontSize: 12, color: '#8E8E93' }}>Скоро</div>
-              )}
+              {slot.available ? <div style={{ fontSize: 12, color: '#30D158' }}>Доступен</div> : <div style={{ fontSize: 12, color: '#8E8E93' }}>Скоро</div>}
             </div>
-
             {slot.available && <span style={{ color: '#0071E3', fontWeight: 600 }}>Начать →</span>}
           </div>
         ))}
