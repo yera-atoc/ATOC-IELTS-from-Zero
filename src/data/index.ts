@@ -1,11 +1,11 @@
 // ─────────────────────────────────────────────────────────────
-//  AtoC · IELTS from Zero — Lessons Index
+// AtoC · IELTS from Zero — Lessons Index
 //
-//  HOW TO ADD A NEW LESSON:
-//  1. Create src/data/lessons/a6.ts  (copy a5.ts as template)
-//  2. Import it below: import a6 from "./lessons/a6"
-//  3. Add it to the lessons array
-//  That's it. The rest of the app picks it up automatically.
+// HOW TO ADD A NEW LESSON:
+// 1. Create src/data/lessons/a15.ts (copy previous as template)
+// 2. Import it below
+// 3. Add it to the lessons array
+// That's it. The rest of the app picks it up automatically.
 // ─────────────────────────────────────────────────────────────
 
 import type { Lesson } from "@/types/lesson";
@@ -16,10 +16,15 @@ import a2 from "./lessons/a2";
 import a3 from "./lessons/a3";
 import a4 from "./lessons/a4";
 import a5 from "./lessons/a5";
-// import a6 from "./lessons/a6";   ← uncomment when ready
-// import a7 from "./lessons/a7";
-// ...
-// import a20 from "./lessons/a20";
+import a6 from "./lessons/a6";
+import a7 from "./lessons/a7";
+import a8 from "./lessons/a8";
+import a9 from "./lessons/a9";
+import a10 from "./lessons/a10";
+import a11 from "./lessons/a11";
+import a12 from "./lessons/a12";
+import a13 from "./lessons/a13";
+import a14 from "./lessons/a14";
 
 // ── B Band ──────────────────────────────────────────────────
 // import b1 from "./lessons/b1";
@@ -32,12 +37,10 @@ import a5 from "./lessons/a5";
 // ...
 
 // ─────────────────────────────────────────────────────────────
-
 const lessons: Lesson[] = [
   // A Band
-  a1, a2, a3, a4, a5,
-  // a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20,
-
+  a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14,
+  
   // B Band
   // b1, b2, ..., b20,
 
@@ -46,7 +49,6 @@ const lessons: Lesson[] = [
 ];
 
 // ── Lookup helpers ───────────────────────────────────────────
-
 /** Get a lesson by its id ("a1", "b3", "c2") */
 export function getLessonById(id: string): Lesson | undefined {
   return lessons.find((l) => l.id === id);
