@@ -5,14 +5,15 @@ const a12: Lesson = {
   level: "A12",
   band: "A",
   number: 12,
-  title: "Present Perfect (for/since) · Образование",
-  subtitle: "Elementary",
+  title: "Present Perfect: for / since",
+  subtitle: "Образование",
   grammarTopics: [
-    "Present Perfect: for / since",
-    "Разница между Present Perfect и Past Simple",
-    "Вопросительная структура How long...?",
+    "Present Perfect + for / since",
+    "Разница между for и since",
+    "Вопрос How long...?",
+    "Разница Present Perfect и Past Simple",
   ],
-  readingInfo: "2 текста + 60 слов",
+  readingInfo: "2 текста + 60 новых слов",
   writingInfo: "2 абзаца (110–120 слов)",
   prevLesson: "a11",
   nextLesson: "a13",
@@ -20,61 +21,89 @@ const a12: Lesson = {
   grammar: [
     {
       id: "grammar-1",
-      title: "for и since: в чём разница?",
-      explanation:
-        "С Present Perfect мы часто говорим о том, как долго длится действие. Для этого используются маркеры for (указывает на период времени) и since (указывает на конкретную точку начала действия).",
+      title: "for и since — в чём разница?",
+      explanation: "С Present Perfect мы используем for (период времени) и since (точка начала) для выражения продолжительности действия.",
       tables: [
         {
           headers: ["Слово", "Значение", "После него стоит...", "Примеры"],
           rows: [
-            ["for", "на протяжении (период)", "число + единица времени", "for two years / for six months / for a long time"],
-            ["for", "на протяжении (период)", "число + единица времени", "for three weeks / for ages / for a decade"],
-            ["since", "с того момента, как (точка)", "конкретная дата или событие", "since 2019 / since Monday / since I was a child"],
-            ["since", "с того момента, как (точка)", "конкретная дата или событие", "since September / since the school opened / since last year"],
+            ["for", "на протяжении (период)", "число + единица времени", "for two years, for six months, for a long time"],
+            ["since", "с того момента, как (точка)", "конкретная дата или событие", "since 2019, since Monday, since I was a child"],
           ],
         },
+      ],
+      correctExamples: [
+        "I have studied English for five years.",
+        "She has worked here since 2019.",
+      ],
+      incorrectExamples: [
+        "I have studied here since five years.",
+        "She has worked here for 2019.",
+      ],
+      ieltsHint: "В IELTS Writing Task 1 (graphs): 'The number of students has increased for the past decade.'",
+      taskInstruction: "Вставь for или since:\n1. I have been interested in biology ______ I was twelve.\n2. She has taught at this university ______ fifteen years.\n...",
+    },
+    {
+      id: "grammar-2",
+      title: "Вопрос How long...? — как долго?",
+      explanation: "Вопрос How long...? используется с Present Perfect для уточнения продолжительности действия. Ответ всегда содержит for или since.",
+      tables: [
         {
-          headers: ["Структура", "Пример", "Перевод"],
+          headers: ["Вопрос", "Краткий ответ", "Полный ответ"],
           rows: [
-            ["Subject + have/has + V3 + for + период", "I have studied English for five years.", "Я учу английский уже пять лет."],
-            ["Subject + have/has + V3 + since + точка", "She has lived in Almaty since 2015.", "Она живет в Алматы с 2015 года."],
+            ["How long have you studied English?", "For three years.", "I have studied English for three years."],
+            ["How long has she lived in London?", "Since 2021.", "She has lived in London since 2021."],
           ],
         },
+      ],
+      correctExamples: [
+        "How long have you been here?",
+        "How long has he worked here?",
+      ],
+      incorrectExamples: [
+        "How long do you study English?",
+        "How long you have been here?",
+      ],
+      ieltsHint: "В IELTS Speaking Part 1 часто спрашивают 'How long have you...?' Подготовь ответы заранее.",
+      taskInstruction: "Составь вопрос How long...? и ответ:\n1. She studies at Oxford. (since 2022) → How long ______? → ______\n...",
+    },
+  ],
+
+  readings: [
+    {
+      id: "reading-1",
+      text: "Education has changed dramatically in the last twenty years. Many students have studied online since the pandemic began. Universities have offered distance learning for several years now. Some learners have been using educational platforms for more than five years. However, many young people have not had access to quality education since childhood. Teachers have noticed that motivation has decreased in some cases. Despite this, technology has helped millions of students continue their studies. The education system continues to evolve.",
+      wordCount: 95,
+      taskInstruction: "Найди все примеры Present Perfect с for/since.",
+      vocabulary: [
+        { word: "dramatically", translation: "кардинально" },
+        { word: "pandemic", translation: "пандемия" },
+        { word: "distance learning", translation: "дистанционное обучение" },
+        { word: "platform", translation: "платформа" },
+        { word: "access", translation: "доступ" },
+        { word: "motivation", translation: "мотивация" },
+        { word: "evolve", translation: "развиваться" },
       ],
     },
   ],
 
-  writing: [
+  writingTasks: [
     {
       id: "writing-1",
-      title: "Writing Task 1",
-      instruction:
-        "Опиши свой опыт обучения. Ответь на вопрос: 'How long have you studied English?'",
+      title: "Writing Task",
+      instruction: "Напиши 2 абзаца (110–120 слов) на тему Образование, используя Present Perfect with for/since.",
       structure: [
-        "Абзац 1: Расскажи, когда ты начал и сколько уже учишься, используя конструкции с for и since.",
+        "Абзац 1: Как долго ты/люди изучают английский или другой предмет (for/since)",
+        "Абзац 2: Изменения в образовании за последние годы (Present Perfect)",
       ],
-      requirements: [
-        "Минимум: 2 предложения в Past Simple + 3 предложения в Present Perfect (for/since)",
-        "Объём: 110–120 слов",
-      ],
+      requirements: ["110–120 слов", "Используй for, since, How long...?, already, yet"],
     },
-    {
-      id: "writing-2",
-      title: "Writing Task 2",
-      instruction:
-        "Напиши Opinion Essay об образовании. Ответь на вопрос: 'In recent years, the quality of education has improved greatly. Do you agree?'",
-      structure: [
-        "Абзац 1: Введение: позиция + 1 аргумент с шаблоном 'In recent years... has...'",
-        "Абзац 2: Аргумент 2: конкретный пример в Past Simple + вывод в Present Perfect",
-      ],
-      requirements: [
-        "Начни с фразы: 'In recent years, education systems around the world have...'",
-        "Обязательно включи: 1 предложение с for, 1 предложение с since, 1 предложение с recently/lately",
-        "Объём: 110–120 слов",
-        "Шаблон аргументации: 'For instance, since [год/событие], [страна/школа] has [результат]. This demonstrates that...'",
-        "IELTS Подсказка: Чередование Present Perfect и Past Simple в одном эссе — яркий маркер широкого грамматического диапазона (Grammar Range Band 7+). Пример: 'Governments invested heavily in education in the 1990s, and since then, literacy rates have risen dramatically.'",
-      ],
-    },
+  ],
+
+  completedTopics: [
+    "Grammar: Present Perfect + for/since · How long...? · Разница с Past Simple",
+    "Тема: Образование",
+    "Writing: 2 абзаца (110–120 слов)",
   ],
 };
 
