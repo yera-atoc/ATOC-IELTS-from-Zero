@@ -2,19 +2,22 @@ import type { Lesson } from "@/types/lesson";
 
 const b1: Lesson = {
   id: "b1",
-  level: "B1",
+  level: "B1",           // ← обязательно
   band: "B",
   number: 1,
   title: "Present Perfect Continuous",
   subtitle: "Урбанизация и города",
+
   grammarTopics: [
     "Present Perfect Continuous (have/has been + V-ing)",
     "For / Since / How long с PPC",
     "Present Perfect vs Present Perfect Continuous",
     "Impersonal Passive и академический стиль",
   ],
+
   readingInfo: "2 текста + 60+ новых слов",
   writingInfo: "IELTS Task 2 — Introduction (150 слов)",
+
   prevLesson: "a20",
   nextLesson: "b2",
 
@@ -72,6 +75,7 @@ const b1: Lesson = {
         { word: "infrastructure", translation: "инфраструктура" },
         { word: "congestion", translation: "пробки" },
       ],
+      lifehack: "", // ← добавьте это поле (обязательное по типу!)
     },
   ],
 
