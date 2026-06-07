@@ -1,10 +1,5 @@
 // ─────────────────────────────────────────────────────────────
 // AtoC · IELTS from Zero — Lessons Index
-//
-// HOW TO ADD A NEW LESSON:
-// 1. Create src/data/lessons/aXX.ts
-// 2. Import it below
-// 3. Add it to the lessons array
 // ─────────────────────────────────────────────────────────────
 import type { Lesson } from "@/types/lesson";
 
@@ -31,13 +26,29 @@ import a19 from "./lessons/a19";
 import a20 from "./lessons/a20";
 
 // ── B Band ──────────────────────────────────────────────────
-// import b1 from "./lessons/b1";
-// import b2 from "./lessons/b2";
-// ...
+import b1 from "./lessons/b1";
+import b2 from "./lessons/b2";
+import b3 from "./lessons/b3";
+import b4 from "./lessons/b4";
+import b5 from "./lessons/b5";
+import b6 from "./lessons/b6";
+import b7 from "./lessons/b7";
+import b8 from "./lessons/b8";
+import b9 from "./lessons/b9";
+import b10 from "./lessons/b10";
+import b11 from "./lessons/b11";
+import b12 from "./lessons/b12";
+import b13 from "./lessons/b13";
+import b14 from "./lessons/b14";
+import b15 from "./lessons/b15";
+import b16 from "./lessons/b16";
+import b17 from "./lessons/b17";
+import b18 from "./lessons/b18";
+import b19 from "./lessons/b19";
+import b20 from "./lessons/b20";
 
-// ── C Band ──────────────────────────────────────────────────
+// ── C Band (пока пусто) ─────────────────────────────────────
 // import c1 from "./lessons/c1";
-// import c2 from "./lessons/c2";
 // ...
 
 // ─────────────────────────────────────────────────────────────
@@ -46,29 +57,27 @@ const lessons: Lesson[] = [
   a1, a2, a3, a4, a5, a6, a7, a8, a9, a10,
   a11, a12, a13, a14, a15, a16, a17, a18, a19, a20,
 
-  // B Band (раскомментируй позже)
-  // b1, b2, ...
-  // C Band (раскомментируй позже)
+  // B Band
+  b1, b2, b3, b4, b5, b6, b7, b8, b9, b10,
+  b11, b12, b13, b14, b15, b16, b17, b18, b19, b20,
+
+  // C Band (добавляй позже)
   // c1, c2, ...
 ];
 
-// ── Lookup helpers ───────────────────────────────────────────
-/** Get a lesson by its id ("a1", "b3", "c2") */
+// ── Helpers ─────────────────────────────────────────────────
 export function getLessonById(id: string): Lesson | undefined {
   return lessons.find((l) => l.id === id);
 }
 
-/** Get all lessons for a given band ("A", "B", "C") */
 export function getLessonsByBand(band: "A" | "B" | "C"): Lesson[] {
   return lessons.filter((l) => l.band === band);
 }
 
-/** Get the full ordered list */
 export function getAllLessons(): Lesson[] {
   return lessons;
 }
 
-/** Get prev / next lesson */
 export function getAdjacentLessons(id: string): {
   prev: Lesson | null;
   next: Lesson | null;
