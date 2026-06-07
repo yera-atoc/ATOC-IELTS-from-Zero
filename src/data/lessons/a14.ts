@@ -5,14 +5,14 @@ const a14: Lesson = {
   level: "A14",
   band: "A",
   number: 14,
-  title: "Passive Voice · Наука",
-  subtitle: "Elementary",
+  title: "First Conditional · Unless · As long as",
+  subtitle: "Экология и окружающая среда",
   grammarTopics: [
-    "Present Simple Passive (am/is/are + V3)",
-    "Past Simple Passive (was/were + V3)",
-    "Использование пассивного залога для описания процессов и научных фактов",
+    "First Conditional (If + Present Simple, will + V1)",
+    "Порядок частей предложения",
+    "Unless / As long as",
   ],
-  readingInfo: "2 текста + 60 слов",
+  readingInfo: "2 текста + 60 новых слов",
   writingInfo: "2 абзаца (110–130 слов)",
   prevLesson: "a13",
   nextLesson: "a15",
@@ -20,62 +20,82 @@ const a14: Lesson = {
   grammar: [
     {
       id: "grammar-1",
-      title: "Что такое Passive Voice (Пассивный залог)?",
-      explanation:
-        "Пассивный залог используется, когда само действие или его объект важнее, чем тот, кто это действие совершает. В научных текстах и описаниях процессов исполнитель часто опускается.",
+      title: "First Conditional: структура",
+      explanation: "First Conditional используется для реальных условий и возможных результатов в настоящем или будущем. Это одно из самых важных условных наклонений в IELTS.",
       tables: [
         {
-          headers: ["Время", "Структура", "Пример (Активный)", "Пример (Пассивный)"],
+          headers: ["Часть предложения", "Форма", "Пример (тема: экология)"],
           rows: [
-            ["Present Simple", "am / is / are + V3", "Scientists conduct experiments.", "Experiments are conducted by scientists."],
-            ["Present Simple", "am / is / are + V3", "Water covers most of the Earth.", "Most of the Earth is covered by water."],
-            ["Past Simple", "was / were + V3", "Alexander Fleming discovered penicillin.", "Penicillin was discovered by Alexander Fleming."],
-            ["Past Simple", "was / were + V3", "The government built the laboratory in 2010.", "The laboratory was built in 2010."],
+            ["IF-clause (условие)", "if + Present Simple", "If we reduce carbon emissions,"],
+            ["Main clause (результат)", "will + bare infinitive", "the climate will improve."],
           ],
         },
+      ],
+      correctExamples: [
+        "If it rains, the forest will suffer.",
+        "If we use renewable energy, we will reduce air pollution.",
+      ],
+      incorrectExamples: [
+        "If it will rain, the forest will suffer.",
+      ],
+      ieltsHint: "В IELTS Writing Task 2 и Speaking используйте First Conditional для обсуждения реальных будущих последствий.",
+      taskInstruction: "Составьте предложения в First Conditional:\n1. use renewable energy → reduce air pollution\n2. cut down fewer trees → protect wildlife habitats\n...",
+    },
+    {
+      id: "grammar-2",
+      title: "Позиции условия и результата",
+      explanation: "Предложение можно строить двумя способами. Запятая ставится только когда IF-clause стоит в начале.",
+      tables: [
         {
-          headers: ["Конструкция", "Когда использовать", "Пример"],
+          headers: ["Порядок", "Структура", "Пример"],
           rows: [
-            ["by + исполнитель", "Когда важно указать, КТО совершил действие", "The theory was developed by Einstein."],
-            ["with + инструмент", "Когда важно указать, ЧЕМ совершено действие", "The data is analyzed with a special computer program."],
+            ["Условие → Результат", "If + PS, will + V1", "If we act now, we will save the planet."],
+            ["Результат → Условие", "Will + V1 + if + PS", "We will save the planet if we act now."],
           ],
         },
+      ],
+      correctExamples: [
+        "Air will be cleaner if we pollute less.",
+        "Glaciers will melt if temperatures rise.",
+      ],
+      ieltsHint: "Используйте обе позиции в Writing Task 2 для разнообразия стиля и повышения Grammatical Range.",
+      taskInstruction: "Переставьте части предложения (поставьте результат перед условием):\n1. If forests disappear, many species will become extinct.\n...",
+    },
+  ],
+
+  readings: [
+    {
+      id: "reading-1",
+      text: "If we continue to pollute the environment, global temperatures will rise. If governments invest in clean energy, many problems will be solved. As long as people recycle, we can reduce waste. Unless we change our habits, the planet will suffer greatly. If everyone plants trees, the air will become cleaner. Environmental protection is possible if we all take action now.",
+      wordCount: 85,
+      taskInstruction: "Найди все примеры First Conditional и unless/as long as.",
+      vocabulary: [
+        { word: "pollute", translation: "загрязнять" },
+        { word: "global temperatures", translation: "глобальная температура" },
+        { word: "invest in", translation: "инвестировать в" },
+        { word: "recycle", translation: "перерабатывать" },
+        { word: "take action", translation: "принимать меры" },
       ],
     },
   ],
 
-  writing: [
+  writingTasks: [
     {
       id: "writing-1",
-      title: "Writing Task 1",
-      instruction:
-        "Опиши круговорот воды в природе или процесс научного эксперимента. Напиши 2 абзаца (110–120 слов).",
+      title: "Writing Task",
+      instruction: "Напиши 2 абзаца (110–130 слов) на тему Экология, используя First Conditional.",
       structure: [
-        "Абзац 1: Начало процесса (какие действия выполняются первыми, что нагревается / собирается)",
-        "Абзац 2: Завершение процесса (какой результат достигается, куда направляется очищенная вода / данные)",
+        "Абзац 1: Что произойдёт, если мы не изменим поведение (If ... will ...)",
+        "Абзац 2: Что улучшится, если мы будем действовать (If ... will ... / Unless ...)",
       ],
-      requirements: [
-        "Используй минимум 4 глагола в Present Simple Passive",
-        "Используй слова-последовательности: First, Then, After that, Finally",
-        "Объём: 110–120 слов",
-      ],
+      requirements: ["110–130 слов", "Используй if, will, unless, as long as"],
     },
-    {
-      id: "writing-2",
-      title: "Writing Task 2",
-      instruction:
-        "Напиши Opinion Essay о финансировании научных исследований. Ответь на вопрос: 'Should scientific research be funded by governments or private companies?'",
-      structure: [
-        "Абзац 1: Введение + тезис с использованием пассивного залога (например, о том, как распределяются деньги сейчас)",
-        "Абзац 2: Аргумент в пользу государственного финансирования (почему важные открытия должны контролироваться обществом)",
-      ],
-      requirements: [
-        "Начни введение с фразы: 'It is often argued that scientific research should be...'",
-        "Минимум 2 предложения в Present Simple Passive и 2 предложения в Past Simple Passive",
-        "Объём: 110–130 слов",
-        "IELTS Подсказка: Пассивный залог — это основа академического стиля (Academic Tone) в IELTS Academic Task 1 (описание графиков/процессов) и Task 2. Он позволяет убрать местоимения 'I', 'we', 'people' и сделать текст объективным. Вместо 'People believe that...' пиши 'It is believed that...'.",
-      ],
-    },
+  ],
+
+  completedTopics: [
+    "Grammar: First Conditional · Unless · As long as",
+    "Тема: Экология и окружающая среда",
+    "Writing: 2 абзаца (110–130 слов)",
   ],
 };
 
