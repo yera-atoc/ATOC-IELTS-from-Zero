@@ -1,7 +1,7 @@
 // src/data/lessons/index.ts
 import type { Lesson } from "@/types/lesson";
 
-// ── A Band ──────────────────────────────────────────────────
+// ── A Band Imports ──────────────────────────────────────────
 import a1 from "./a1";
 import a2 from "./a2";
 import a3 from "./a3";
@@ -23,7 +23,7 @@ import a18 from "./a18";
 import a19 from "./a19";
 import a20 from "./a20";
 
-// ── B Band ──────────────────────────────────────────────────
+// ── B Band Imports ──────────────────────────────────────────
 import b1 from "./b1";
 import b2 from "./b2";
 import b3 from "./b3";
@@ -45,6 +45,7 @@ import b18 from "./b18";
 import b19 from "./b19";
 import b20 from "./b20";
 
+// Объединяем все уроки в один массив
 const lessons: Lesson[] = [
   a1, a2, a3, a4, a5, a6, a7, a8, a9, a10,
   a11, a12, a13, a14, a15, a16, a17, a18, a19, a20,
@@ -52,10 +53,15 @@ const lessons: Lesson[] = [
   b11, b12, b13, b14, b15, b16, b17, b18, b19, b20,
 ];
 
+// Экспортируем функции с явной типизацией
 export function getLessonById(id: string): Lesson | undefined {
   return lessons.find((l) => l.id === id);
 }
 
+/**
+ * Важно: эта функция фильтрует по свойству 'band', которое должно быть
+ * прописано внутри каждого объекта урока (например, b1.ts)
+ */
 export function getLessonsByBand(band: "A" | "B" | "C"): Lesson[] {
   return lessons.filter((l) => l.band === band);
 }
