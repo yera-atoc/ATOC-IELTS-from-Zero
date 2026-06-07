@@ -1,6 +1,4 @@
-// ─────────────────────────────────────────────────────────────
-// AtoC · IELTS from Zero — Lessons Index
-// ─────────────────────────────────────────────────────────────
+// src/data/lessons/index.ts
 import type { Lesson } from "@/types/lesson";
 
 // ── A Band ──────────────────────────────────────────────────
@@ -47,19 +45,13 @@ import b18 from "./b18";
 import b19 from "./b19";
 import b20 from "./b20";
 
-// ── C Band (пока пусто) ─────────────────────────────────────
-
-// ─────────────────────────────────────────────────────────────
 const lessons: Lesson[] = [
-  // A Band
   a1, a2, a3, a4, a5, a6, a7, a8, a9, a10,
   a11, a12, a13, a14, a15, a16, a17, a18, a19, a20,
-  // B Band
   b1, b2, b3, b4, b5, b6, b7, b8, b9, b10,
   b11, b12, b13, b14, b15, b16, b17, b18, b19, b20,
 ];
 
-// ── Helpers ─────────────────────────────────────────────────
 export function getLessonById(id: string): Lesson | undefined {
   return lessons.find((l) => l.id === id);
 }
