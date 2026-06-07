@@ -31,26 +31,13 @@ import b4 from "./b4";
 import b5 from "./b5";
 import b6 from "./b6";
 import b7 from "./b7";
-import b8 from "./b8";
-import b9 from "./b9";
-import b10 from "./b10";
-import b11 from "./b11";
-import b12 from "./b12";
-import b13 from "./b13";
-import b14 from "./b14";
-import b15 from "./b15";
-import b16 from "./b16";
-import b17 from "./b17";
-import b18 from "./b18";
-import b19 from "./b19";
-import b20 from "./b20";
+
 
 // Объединяем все уроки в один массив
 const lessons: Lesson[] = [
   a1, a2, a3, a4, a5, a6, a7, a8, a9, a10,
   a11, a12, a13, a14, a15, a16, a17, a18, a19, a20,
-  b1, b2, b3, b4, b5, b6, b7, b8, b9, b10,
-  b11, b12, b13, b14, b15, b16, b17, b18, b19, b20,
+  b1, b2, b3, b4, b5, b6, b7,
 ];
 
 // Экспортируем функции с явной типизацией
