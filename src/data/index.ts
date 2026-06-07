@@ -24,6 +24,16 @@ import a11 from "./lessons/a11";
 import a12 from "./lessons/a12";
 import a13 from "./lessons/a13";
 import a14 from "./lessons/a14";
+import a11 from "./lessons/a11";
+import a12 from "./lessons/a12";
+import a13 from "./lessons/a13";
+import a14 from "./lessons/a14";
+import a15 from "./lessons/a15";
+import a16 from "./lessons/a16";
+import a17 from "./lessons/a17";
+import a18 from "./lessons/a18";
+import a19 from "./lessons/a19";
+import a20 from "./lessons/a20";
 
 // ── B Band ──────────────────────────────────────────────────
 // import b1 from "./lessons/b1";
@@ -38,7 +48,7 @@ import a14 from "./lessons/a14";
 // ─────────────────────────────────────────────────────────────
 const lessons: Lesson[] = [
   // A Band
-  a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14,
+  a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20,
   
   // B Band (раскомментируй позже)
   // b1, b2, ...
