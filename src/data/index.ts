@@ -5,7 +5,6 @@
 // 1. Create src/data/lessons/a15.ts (copy previous as template)
 // 2. Import it below
 // 3. Add it to the lessons array
-// That's it. The rest of the app picks it up automatically.
 // ─────────────────────────────────────────────────────────────
 
 import type { Lesson } from "@/types/lesson";
@@ -41,11 +40,11 @@ const lessons: Lesson[] = [
   // A Band
   a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14,
   
-  // B Band
-  // b1, b2, ..., b20,
+  // B Band (раскомментируй позже)
+  // b1, b2, ...
 
-  // C Band
-  // c1, c2, ..., c20,
+  // C Band (раскомментируй позже)
+  // c1, c2, ...
 ];
 
 // ── Lookup helpers ───────────────────────────────────────────
@@ -59,12 +58,12 @@ export function getLessonsByBand(band: "A" | "B" | "C"): Lesson[] {
   return lessons.filter((l) => l.band === band);
 }
 
-/** Get the full ordered list (used for nav, progress bars, etc.) */
+/** Get the full ordered list */
 export function getAllLessons(): Lesson[] {
   return lessons;
 }
 
-/** Get prev / next lesson objects (null if at boundary) */
+/** Get prev / next lesson */
 export function getAdjacentLessons(id: string): {
   prev: Lesson | null;
   next: Lesson | null;
